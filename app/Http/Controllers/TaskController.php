@@ -12,7 +12,9 @@ class TaskController extends Controller
      */
     public function index()
     {
-        return view ('admin.tasks.index');
+        // $tasks= new Task;
+        $tasks = Task::all();
+        return view('admin.tasks.index', compact('tasks'));
     }
 
     /**
@@ -20,7 +22,7 @@ class TaskController extends Controller
      */
     public function create()
     {
-        return view ('admin.tasks.create');
+        return view('admin.tasks.create');
     }
 
     /**
@@ -28,7 +30,21 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        return view ('admin.task.view');
+        $tasks = new Task;
+        $validation = $request->validate([
+            'title' => 'required',
+            'description' => 'required',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $fileName = $request->id . "-" . time() . '.' . $request->image->extension();
+        $request->image->move(public_path('uploads'), $fileName);
+
+        $tasks->title = $request->title;
+        $tasks->description = $request->description;
+        $tasks->image =  $fileName;
+        $tasks->save();
+        return redirect()->route('tasks.index')->with('success', 'Task created successfully.');
     }
 
     /**
@@ -44,7 +60,7 @@ class TaskController extends Controller
      */
     public function edit(Task $task)
     {
-        //
+        return view('admin.tasks.edit', compact('task'));
     }
 
     /**
@@ -52,7 +68,25 @@ class TaskController extends Controller
      */
     public function update(Request $request, Task $task)
     {
-        //
+        $validation = $request->validate([
+            'title' => 'required',
+            'description' => 'required',
+            'image' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $task->title = $request->title;
+        $task->description = $request->description;
+
+        if ($request->hasFile('image')) {
+            // Handle file upload
+            $fileName = time() . '.' . $request->image->extension();
+            $request->image->move(public_path('uploads'), $fileName);
+            $task->image = $fileName;
+        }
+
+        $task->save();
+
+        return redirect()->route('tasks.index')->with('success', 'Task updated successfully.');
     }
 
     /**
