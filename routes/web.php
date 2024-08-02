@@ -22,10 +22,10 @@ Route::get('dashboard', function () {  // scope resolution
     return view('admin.dashboard');
 });
 
-//tasks index.blade
-
-Route::Resource('tasks', 'App\Http\Controllers\TaskController');
-
+Route::middleware(['auth'])->group(function () {
+    // Tasks index.blade
+    Route::resource('tasks', 'App\Http\Controllers\TaskController'); // for login
+});
 
 
 Auth::routes();
